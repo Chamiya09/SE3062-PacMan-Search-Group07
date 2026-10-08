@@ -1,0 +1,56 @@
+# =========================================
+# Byte-compiled / optimized / DLL files
+# =========================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================================
+# Virtual Environments
+# =========================================
+.venv/
+venv/
+ENV/
+env/
+venv.bak/
+env.bak/
+
+# =========================================
+# IDE and Editor configurations
+# =========================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm / JetBrains
+.idea/
+
+# Vim / generic editor swap & backup files
+*.swp
+*.swo
+*~
+
+# =========================================
+# Operating System files
+# =========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =========================================
+# Logs, Testing & Submission files
+# =========================================
+*.log
+.pytest_cache/
+*.zip
+submission.zip
