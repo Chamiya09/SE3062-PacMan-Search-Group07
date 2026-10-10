@@ -387,7 +387,54 @@ def cornersHeuristic(state: Any, problem: CornersProblem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    """
+    Q6 - Corners Heuristic
+
+    Estimates the minimum remaining distance to visit
+    all unvisited corners using Manhattan distance.
+    """
+
+    from itertools import permutations
+
+    position, visited_corners = state
+    corners = problem.corners
+
+    # Step 1: Identify unvisited corners
+    remaining_corners = []
+
+    for i, corner in enumerate(corners):
+        if not visited_corners[i]:
+            remaining_corners.append(corner)
+
+    # Step 2: All corners visited
+    if not remaining_corners:
+        return 0
+
+    # Step 3: Manhattan distance
+    def manhattan_distance(point1, point2):
+        return (
+            abs(point1[0] - point2[0])
+            + abs(point1[1] - point2[1])
+        )
+
+    # Step 4: Find the shortest estimated visiting order
+    minimum_cost = float('inf')
+
+    for order in permutations(remaining_corners):
+        total_cost = 0
+        current_position = position
+
+        for corner in order:
+            total_cost += manhattan_distance(
+                current_position, corner
+            )
+            current_position = corner
+
+        minimum_cost = min(minimum_cost, total_cost)
+
+    # Step 5: Return estimated remaining cost
+    return minimum_cost
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
