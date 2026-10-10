@@ -86,13 +86,90 @@ def depthFirstSearch(problem: SearchProblem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Create a stack to store states that need to be explored
+    frontier = util.Stack()
+
+    # Get the starting state
+    start_state = problem.getStartState()
+
+    # Add the starting state with an empty path
+    frontier.push((start_state, []))
+
+    # Store states that have already been expanded
+    visited = set()
+
+    # Continue searching until the stack is empty
+    while not frontier.isEmpty():
+
+        # Remove the most recently added state
+        current_state, path = frontier.pop()
+
+        # Check whether the current state is the goal
+        if problem.isGoalState(current_state):
+            return path
+
+        # Skip states that have already been expanded
+        if current_state in visited:
+            continue
+
+        # Mark the current state as visited
+        visited.add(current_state)
+
+        # Get the successors of the current state
+        for next_state, action, step_cost in problem.getSuccessors(current_state):
+
+            if next_state not in visited:
+
+                # Create the new path by adding the action
+                new_path = path + [action]
+
+                # Add the successor and its path to the stack
+                frontier.push((next_state, new_path))
+
+    # Return an empty list if no solution is found
+    return []
+
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # Create a queue and visited set
+    frontier = util.Queue()
+    visited = set()
+
+    # Get the starting state
+    start_state = problem.getStartState()
+
+    # Add start state and empty path to the queue
+    frontier.push((start_state, []))
+    visited.add(start_state)
+
+    # Continue until queue is empty
+    while not frontier.isEmpty():
+
+        # Remove the first state from the queue
+        current_state, path = frontier.pop()
+
+        # Check if the goal is reached
+        if problem.isGoalState(current_state):
+            return path
+
+        # Explore neighboring states
+        for successor, action, step_cost in problem.getSuccessors(current_state):
+
+            # Only explore unvisited states
+            if successor not in visited:
+                visited.add(successor)
+
+                # Create a new path
+                new_path = path + [action]
+
+                # Add successor to the queue
+                frontier.push((successor, new_path))
+
+    # Return empty path if no solution exists
+    return []
+
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
@@ -138,10 +215,41 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    frontier = util.PriorityQueue()
+    start = problem.getStartState()
+
+    frontier.push((start, [], 0), heuristic(start, problem))
+    best_cost = {start: 0}
+
+    while not frontier.isEmpty():
+        state, path, cost = frontier.pop()
+
+        if cost > best_cost.get(state, float('inf')):
+            continue
+
+        if problem.isGoalState(state):
+            return path
+
+        for successor, action, step_cost in problem.getSuccessors(state):
+            new_cost = cost + step_cost
+
+            if new_cost < best_cost.get(successor, float('inf')):
+                best_cost[successor] = new_cost
+
+                new_path = path + [action]
+                priority = new_cost + heuristic(successor, problem)
+
+                frontier.push(
+                    (successor, new_path, new_cost),
+                    priority
+                )
+
+    return []
+
 
 
 # Abbreviations
