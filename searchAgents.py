@@ -424,6 +424,96 @@ class AStarFoodSearchAgent(SearchAgent):
     def __init__(self):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
+        
+
+def getCachedMazeDistance(point1, point2, problem):
+    """Find shortest maze distance and cache the result."""
+
+    if point1 == point2:
+        return 0
+
+    cache = problem.heuristicInfo.setdefault("mazeDistances", {})
+
+    key = tuple(sorted((point1, point2)))
+
+    if key in cache:
+        return cache[key]
+
+    from collections import deque
+
+    walls = problem.walls
+    queue = deque([(point1, 0)])
+    visited = {point1}
+
+    directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+    while queue:
+        (x, y), distance = queue.popleft()
+
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+
+            if (
+                nx < 0 or ny < 0
+                or nx >= walls.width
+                or ny >= walls.height
+                or walls[nx][ny]
+                or (nx, ny) in visited
+            ):
+                continue
+
+            nextPosition = (nx, ny)
+
+            if nextPosition == point2:
+                cache[key] = distance + 1
+                return distance + 1
+
+            visited.add(nextPosition)
+            queue.append((nextPosition, distance + 1))
+
+    return float("inf")
+
+
+def getFoodMSTCost(foodList, problem):
+    """Calculate cached MST cost for remaining food."""
+
+    if len(foodList) <= 1:
+        return 0
+
+    cache = problem.heuristicInfo.setdefault("foodMST", {})
+    key = frozenset(foodList)
+
+    if key in cache:
+        return cache[key]
+
+    remaining = set(foodList)
+    connected = {remaining.pop()}
+    totalCost = 0
+
+    while remaining:
+        bestDistance = float("inf")
+        bestFood = None
+
+        for source in connected:
+            for target in remaining:
+                distance = getCachedMazeDistance(
+                    source, target, problem
+                )
+
+                if distance < bestDistance:
+                    bestDistance = distance
+                    bestFood = target
+
+        if bestFood is None:
+            return float("inf")
+
+        totalCost += bestDistance
+        connected.add(bestFood)
+        remaining.remove(bestFood)
+
+    cache[key] = totalCost
+    return totalCost
+
 
 def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     """
@@ -459,13 +549,14 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
     if not foodList:
         return 0
 
-    distances = []
+    nearestFoodDistance = min(
+        getCachedMazeDistance(position, food, problem)
+        for food in foodList
+    )
 
-    for food in foodList:
-        distance = util.manhattanDistance(position, food)
-        distances.append(distance)
+    mstCost = getFoodMSTCost(foodList, problem)
 
-    return max(distances)
+    return nearestFoodDistance + mstCost
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
